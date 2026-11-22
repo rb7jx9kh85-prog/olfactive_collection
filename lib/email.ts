@@ -17,7 +17,8 @@ export async function deliverEmail(order:Order,kind:'paid'|'shipped') {
  try {
   if(!process.env.RESEND_API_KEY || !process.env.RESEND_FROM_EMAIL) throw new Error('Resend non configuré')
   await sendOrderEmail(order,kind)
-  await db.from('email_jobs').update({sent_at:new Date().toISOString(),last_error:null,attempts:job.attempts+1}).eq('order_id',order.id).eq('kind',kind).is('sent_at',null)
+  const {error:markError}=await db.from('email_jobs').update({sent_at:new Date().toISOString(),last_error:null,attempts:job.attempts+1}).eq('order_id',order.id).eq('kind',kind).is('sent_at',null)
+  if(markError) throw markError
  } catch(e) {
   await db.from('email_jobs').update({last_error:e instanceof Error?e.message.slice(0,500):'Erreur',attempts:job.attempts+1}).eq('order_id',order.id).eq('kind',kind)
   console.error('email delivery',order.id,kind,e)

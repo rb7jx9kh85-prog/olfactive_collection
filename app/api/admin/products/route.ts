@@ -6,10 +6,13 @@ const schema=z.object({id:z.uuid().optional(),slug:z.string().regex(/^[a-z0-9]+(
 export async function POST(req:Request){return adminRequest(req,async()=>{
  const body=schema.parse(await req.json()); const db=service()
  const {variants,...p}=body
+ const previous=body.id?(await db.from('product_variants').select('id,ml').eq('product_id',body.id)).data||[]:[]
  const {data,error}=await db.from('products').upsert({...p,updated_at:new Date().toISOString()}).select('id').single()
  if(error) throw error
  const {error:vError}=await db.from('product_variants').upsert(variants.map(v=>({...v,product_id:data.id})),{onConflict:'product_id,ml'})
  if(vError) throw vError
+ const removed=previous.filter(old=>!variants.some(v=>v.ml===old.ml)).map(v=>v.id)
+ if(removed.length){const {error:removeError}=await db.from('product_variants').update({active:false}).in('id',removed);if(removeError)throw removeError}
  return NextResponse.json({id:data.id})
 })}
 export async function DELETE(req:Request){return adminRequest(req,async()=>{

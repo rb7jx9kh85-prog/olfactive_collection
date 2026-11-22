@@ -10,7 +10,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-La base Supabase liée est `hhmfzfmohtxasygrzvok` (région `eu-central-2`). Les quatre migrations dans `supabase/migrations/` sont déjà appliquées au projet lié. Pour un autre projet, appliquez-les dans l'ordre. La clé `sb_publishable_…` et l'URL sont publiques et préremplies dans `.env.example`. **Ne commitez jamais les secrets.**
+La base Supabase liée est `hhmfzfmohtxasygrzvok` (région `eu-central-2`). Les cinq migrations dans `supabase/migrations/` sont déjà appliquées au projet lié. Pour un autre projet, appliquez-les dans l'ordre. La clé `sb_publishable_…` et l'URL sont publiques et préremplies dans `.env.example`. **Ne commitez jamais les secrets.**
 
 Renseignez dans `.env.local` en local, puis dans les variables d'environnement Vercel :
 
