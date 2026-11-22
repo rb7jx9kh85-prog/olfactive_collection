@@ -6,7 +6,7 @@
   --shop-muted: #65554b;
   --shop-amber: #8d5034;
   --shop-line: #dcd0c1;
-  --shop-serif: "Instrument Serif", Georgia, serif;
+  --shop-serif: "Fraunces Variable", Georgia, serif;
   --shop-sans: "Inter Variable", Arial, sans-serif;
 }
 body { background: var(--shop-paper); color: var(--shop-ink); font-family: var(--shop-sans); }
@@ -26,12 +26,12 @@ body { background: var(--shop-paper); color: var(--shop-ink); font-family: var(-
 .skip-link:focus { transform:none; }
 #contenu:focus { outline:none; }
 .boutique :where(a,button,input,select,summary):focus-visible,.shop-header a:focus-visible,.shop-footer a:focus-visible { outline:2px solid #a56547; outline-offset:4px; }
-.boutique h1,.boutique h2,.boutique h3 { font-family:var(--shop-serif); font-weight:400; }
+.boutique h1,.boutique h2,.boutique h3 { font-family:var(--shop-serif); font-weight:400; font-optical-sizing:auto; }
 .boutique em { color:var(--shop-amber); font-weight:400; }
 .shop-kicker { color:var(--shop-amber); font-weight:600; font-size:.715rem; text-transform:uppercase; letter-spacing:.16em; line-height:1.65; }
 .shop-hero { display:grid; grid-template-columns:47% 53%; min-height:clamp(530px, 47vw, 690px); background:#efe6d8; }
 .shop-hero-copy { padding:clamp(42px,6vw,110px); display:flex; flex-direction:column; justify-content:center; align-items:flex-start; }
-.shop-hero h1 { margin:19px 0 22px; font-size:clamp(62px,7vw,125px); line-height:.87; letter-spacing:-.045em; }
+.shop-hero h1 { margin:19px 0 22px; font-size:clamp(53px,6vw,102px); line-height:.96; letter-spacing:-.055em; }
 .shop-hero-copy p { color:var(--shop-muted); line-height:1.75; max-width:29rem; margin:4px 0 27px; }
 .shop-hero-actions { display:flex; align-items:center; flex-wrap:wrap; gap:14px 24px; }
 .shop-button { display:inline-flex; align-items:center; justify-content:center; gap:9px; min-height:49px; padding:13px 21px; background:var(--shop-ink); border:1px solid var(--shop-ink); color:white; font:500 .85rem/1.4 var(--shop-sans); text-align:center; transition:background .2s,border-color .2s; }
@@ -187,7 +187,7 @@ body { background: var(--shop-paper); color: var(--shop-ink); font-family: var(-
   .shop-announcement { font-size:.69rem; padding:7px 8px; }
   .shop-hero { grid-template-columns:1fr; min-height:0; }
   .shop-hero-copy { padding:36px 21px 31px; }
-  .shop-hero h1 { font-size:clamp(54px,12vw,82px); margin:12px 0 13px; }
+  .shop-hero h1 { font-size:clamp(43px,10vw,70px); margin:12px 0 13px; }
   .desktop-break { display:none; }
   .shop-hero-copy p { margin:0 0 18px; line-height:1.53; font-size:.93rem; }
   .shop-hero-actions { gap:8px 15px; }
