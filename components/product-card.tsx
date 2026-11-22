@@ -1,4 +1,20 @@
 import Link from 'next/link'
 import type { Product } from '@/lib/types'
 import { money } from '@/lib/types'
-export function ProductCard({product:p}:{product:Product}){return <Link href={`/parfum/${p.slug}`} className="product-card"><div className="photo">{p.image_url?<img src={p.image_url} alt={`${p.house} ${p.name}`} loading="lazy"/>:<span className="serif" style={{fontSize:50,color:'#9d8c75'}}>O.</span>}</div><div className="product-info"><span className="eyebrow">{p.house}</span><h3>{p.name}</h3><span className="muted" style={{fontSize:13}}>Dès {p.variants.length?money(Math.min(...p.variants.map(x=>x.price_cents))):'—'}</span></div></Link>}
+import { houseName, productName } from '@/lib/editorial'
+import { ProductPhoto } from './photo'
+
+export function ProductCard({ product }: { product: Product }) {
+  const price = Math.min(...product.variants.map(variant => variant.price_cents))
+  return <article className="shop-card">
+    <Link href={`/parfum/${product.slug}`}>
+      <div className="shop-card-image"><ProductPhoto product={product} sizes="(max-width: 650px) 49vw, (max-width: 1050px) 32vw, 25vw"/></div>
+      <div className="shop-card-info">
+        <span className="shop-kicker">{houseName(product.house)}</span>
+        <h3>{productName(product)}</h3>
+        {product.notes.length > 0 && <p>{product.notes.join(' · ')}</p>}
+        <span className="shop-card-price">{Number.isFinite(price) ? `Dès ${money(price)}` : 'Formats à venir'}</span>
+      </div>
+    </Link>
+  </article>
+}
