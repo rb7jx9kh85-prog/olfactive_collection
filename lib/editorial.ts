@@ -1,6 +1,6 @@
 import type { Product, Variant } from './types'
+import { cataloguePhotos, type Photograph } from './catalogue-photos'
 
-type Photograph = { file: string; alt: string; position?: string }
 export const photo = (file: string) => `/collection/${file}.webp`
 
 const editions: Record<string, { name: string; subtitle: string; photos: Photograph[] }> = {
@@ -63,8 +63,9 @@ export function houseName(house: string) {
 }
 
 export function productPhotos(p: Product): Photograph[] {
-  const photos = editions[p.slug]?.photos ?? []
-  return p.image_url ? [{ file: p.image_url, alt: `Flacon ${productName(p)}` }, ...photos] : photos
+  const photos = [...(cataloguePhotos[p.slug] ?? []), ...(editions[p.slug]?.photos ?? [])]
+  if (!p.image_url) return photos
+  return [{ file: p.image_url, alt: `Flacon ${productName(p)}` }, ...photos.filter(item => photoSrc(item) !== p.image_url)]
 }
 
 export function photoSrc(p: Photograph) {

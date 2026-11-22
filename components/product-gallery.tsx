@@ -11,7 +11,7 @@ export function ProductGallery({ product }: { product: Product }) {
     <div className="shop-gallery-main">{images[index]
       ? <CollectionPhoto {...images[index]} sizes="(max-width: 720px) 100vw, 48vw" priority={index === 0}/>
       : <ProductPhoto product={product} sizes="(max-width: 720px) 100vw, 48vw"/>}</div>
-    {images.length > 0 && <figcaption>Flacon ou coffret d’origine photographié</figcaption>}
+    {images[index] && <figcaption>{images[index].alt}</figcaption>}
     {images.length > 1 && <div className="shop-gallery-thumbs" aria-label="Autres vues">
       {images.map((item, i) => <button type="button" key={item.file + i} aria-label={item.alt} aria-pressed={i === index} onClick={() => setIndex(i)}><CollectionPhoto {...item} alt="" sizes="76px"/></button>)}
     </div>}
