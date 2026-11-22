@@ -1,7 +1,102 @@
 'use client'
-import { useEffect,useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
-import type { Product,CartLine } from '@/lib/types'
+import { LockKeyhole, Minus, Plus, ShoppingBag } from 'lucide-react'
+import type { Product } from '@/lib/types'
 import { money } from '@/lib/types'
-function readCart():CartLine[]{try{const v=JSON.parse(localStorage.getItem('olfactive-cart')||'[]');return Array.isArray(v)?v.filter((x:CartLine)=>typeof x.variant_id==='string'&&Number.isInteger(x.quantity)&&x.quantity>0):[]}catch{return []}}
-export function Cart({products}:{products:Product[]}){const [items,setItems]=useState<CartLine[]>([]),[ready,setReady]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');const [form,setForm]=useState({email:'',customer_name:'',line1:'',line2:'',city:'',postal_code:'',country:'CH',promo_code:''});useEffect(()=>{setItems(readCart());setReady(true)},[]);function update(next:CartLine[]){setItems(next);localStorage.setItem('olfactive-cart',JSON.stringify(next));window.dispatchEvent(new Event('cart-update'))}const enriched=items.map(item=>{const p=products.find(p=>p.variants.some(v=>v.id===item.variant_id));const v=p?.variants.find(v=>v.id===item.variant_id);return {item,p,v}});const subtotal=enriched.reduce((s,x)=>s+(x.v?.price_cents||0)*x.item.quantity,0);async function pay(e:React.FormEvent){e.preventDefault();setBusy(true);setError('');try{const response=await fetch('/api/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:items,customer_name:form.customer_name,email:form.email,promo_code:form.promo_code,address:{line1:form.line1,line2:form.line2,city:form.city,postal_code:form.postal_code,country:form.country}})});const body=await response.json();if(!response.ok||!body.url)throw new Error(body.error||'Impossible de créer la session');window.location.assign(body.url)}catch(e){setError(e instanceof Error?e.message:'Une erreur est survenue');setBusy(false)}}return <main className="container" style={{maxWidth:1080}}><div className="catalogue-head"><span className="eyebrow">Votre sélection</span><h1 className="page-title">Mon panier</h1></div>{!ready?<p>Chargement…</p>:!enriched.length?<div className="empty"><h2>Votre panier attend sa première découverte.</h2><Link className="button" href="/catalogue">Explorer la collection</Link></div>:<div className="split" style={{alignItems:'start',gap:40}}><div className="stack">{enriched.map(({item,p,v})=><div key={item.variant_id} className="panel" style={{display:'flex',gap:16,alignItems:'center',margin:0}}><div style={{width:80,height:95,background:'#e8e2d7',flexShrink:0}}>{p?.image_url&&<img src={p.image_url} alt="" style={{width:'100%',height:'100%',objectFit:'cover'}}/>}</div><div style={{flex:1}}><span className="eyebrow">{p?.house||'Indisponible'}</span><h3 style={{fontSize:22,margin:4}}>{p?.name||'Produit retiré'}</h3><p className="muted" style={{fontSize:13}}>{v?.ml} ml · {v?money(v.price_cents):'—'}</p><div style={{display:'flex',alignItems:'center',gap:14}}><button type="button" onClick={()=>update(items.map(x=>x.variant_id===item.variant_id?{...x,quantity:x.quantity-1}:x).filter(x=>x.quantity>0))} aria-label="Diminuer">−</button>{item.quantity}<button type="button" onClick={()=>update(items.map(x=>x.variant_id===item.variant_id?{...x,quantity:Math.min(20,x.quantity+1)}:x))} aria-label="Augmenter">+</button><button type="button" onClick={()=>update(items.filter(x=>x.variant_id!==item.variant_id))} style={{marginLeft:'auto',fontSize:12,textDecoration:'underline'}}>Retirer</button></div></div></div>)}<div className="panel"><div style={{display:'flex',justifyContent:'space-between'}}><span>Sous-total</span><b>{money(subtotal)}</b></div><p className="muted" style={{fontSize:13}}>Livraison et remise calculées à la prochaine étape. Livraison offerte en Suisse dès CHF 150 après remise.</p></div></div><form onSubmit={pay} className="panel stack" style={{margin:0}}><h2 style={{fontSize:35,margin:0}}>Vos coordonnées</h2><div><label className="label" htmlFor="name">Nom complet</label><input className="input" id="name" required minLength={2} value={form.customer_name} onChange={e=>setForm({...form,customer_name:e.target.value})}/></div><div><label className="label" htmlFor="email">Email</label><input className="input" id="email" type="email" required value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/></div><div><label className="label" htmlFor="address">Adresse</label><input className="input" id="address" required value={form.line1} onChange={e=>setForm({...form,line1:e.target.value})}/></div><div><label className="label" htmlFor="line2">Complément d’adresse</label><input className="input" id="line2" value={form.line2} onChange={e=>setForm({...form,line2:e.target.value})}/></div><div className="form-grid"><div><label className="label" htmlFor="zip">Code postal</label><input className="input" id="zip" required value={form.postal_code} onChange={e=>setForm({...form,postal_code:e.target.value})}/></div><div><label className="label" htmlFor="city">Ville</label><input className="input" id="city" required value={form.city} onChange={e=>setForm({...form,city:e.target.value})}/></div></div><div><label className="label" htmlFor="country">Pays</label><select id="country" className="input" value={form.country} onChange={e=>setForm({...form,country:e.target.value})}><option value="CH">Suisse</option><option value="FR">France</option><option value="BE">Belgique</option></select></div><div><label className="label" htmlFor="promo">Code promotionnel</label><input className="input" id="promo" value={form.promo_code} onChange={e=>setForm({...form,promo_code:e.target.value})}/></div>{error&&<p className="error" role="alert">{error}</p>}<button className="button" disabled={busy||enriched.some(x=>!x.v)}>{busy?'Ouverture de Stripe…':'Continuer vers le paiement sécurisé'}</button><small className="muted">Le montant final est affiché sur la page de paiement Stripe avant validation.</small></form></div>}</main>}
+import { houseName, productName, variantName } from '@/lib/editorial'
+import { saveCart, useCart } from '@/lib/cart-state'
+import { ProductPhoto } from './photo'
+
+type Country = 'CH' | 'FR' | 'BE'
+
+export function Cart({ products }: { products: Product[] }) {
+  const items = useCart()
+  const [country, setCountry] = useState<Country>('CH')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const lines = items.map(item => {
+    const product = products.find(entry => entry.variants.some(variant => variant.id === item.variant_id))
+    return { item, product, variant: product?.variants.find(variant => variant.id === item.variant_id) }
+  })
+  const subtotal = lines.reduce((sum, { item, variant }) => sum + (variant?.price_cents ?? 0) * item.quantity, 0)
+
+  function quantity(id: string, amount: number) {
+    saveCart(items.map(item => item.variant_id === id ? { ...item, quantity: amount } : item).filter(item => item.quantity > 0))
+  }
+
+  async function pay(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const form = new FormData(event.currentTarget)
+    setBusy(true)
+    setError('')
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items,
+          customer_name: form.get('name'),
+          email: form.get('email'),
+          promo_code: form.get('promo') ?? '',
+          address: { line1: form.get('address'), line2: form.get('line2'), city: form.get('city'), postal_code: form.get('zip'), country },
+        }),
+      })
+      const result = await response.json()
+      if (!response.ok || !result.url) throw new Error(result.error || 'Le paiement est momentanément indisponible.')
+      window.location.assign(result.url)
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Le paiement est momentanément indisponible.')
+      setBusy(false)
+    }
+  }
+
+  return <main className="boutique shop-shell shop-cart-page">
+    <header className="shop-page-heading"><span className="shop-kicker">Votre sélection</span><h1>Mon panier</h1></header>
+    {!lines.length ? <div className="shop-empty shop-cart-empty">
+      <ShoppingBag size={30} strokeWidth={1.3}/><h2>Votre panier est vide.</h2>
+      <p>Un premier décant suffit pour faire connaissance avec un parfum.</p>
+      <Link className="shop-button" href="/catalogue">Découvrir la collection</Link>
+    </div> : <div className="shop-cart-layout">
+      <section aria-label="Parfums dans le panier">
+        {lines.map(({ item, product, variant }) => <div className="shop-cart-line" key={item.variant_id}>
+          <div className="shop-cart-photo">{product && <ProductPhoto product={product} sizes="96px"/>}</div>
+          <div className="shop-cart-item">
+            <span className="shop-kicker">{product ? houseName(product.house) : 'Indisponible'}</span>
+            <h2>{product ? <Link href={`/parfum/${product.slug}`}>{productName(product)}</Link> : 'Ce format a été retiré'}</h2>
+            {variant && <p>{variantName(variant)}</p>}
+            <div className="shop-cart-controls">
+              {variant && <div className="shop-stepper">
+                <button type="button" onClick={() => quantity(item.variant_id, item.quantity - 1)} aria-label="Diminuer la quantité" disabled={item.quantity <= 1}><Minus size={15}/></button>
+                <span aria-label="Quantité">{item.quantity}</span>
+                <button type="button" onClick={() => quantity(item.variant_id, item.quantity + 1)} aria-label="Augmenter la quantité" disabled={item.quantity >= 20}><Plus size={15}/></button>
+              </div>}
+              <button type="button" className="shop-text-link" onClick={() => quantity(item.variant_id, 0)}>Retirer</button>
+            </div>
+          </div>
+          {variant && <strong className="shop-cart-price">{money(variant.price_cents * item.quantity)}</strong>}
+        </div>)}
+        <Link className="shop-text-link shop-cart-back" href="/catalogue">Continuer à explorer</Link>
+      </section>
+      <form onSubmit={pay} className="shop-checkout">
+        <h2>Coordonnées de livraison</h2>
+        <label>Nom complet<input className="input" name="name" required minLength={2} maxLength={120} autoComplete="name"/></label>
+        <label>Adresse e-mail<input className="input" name="email" type="email" required maxLength={255} autoComplete="email"/></label>
+        <label>Adresse<input className="input" name="address" required minLength={3} maxLength={180} autoComplete="address-line1"/></label>
+        <label>Complément d’adresse <small>(facultatif)</small><input className="input" name="line2" maxLength={180} autoComplete="address-line2"/></label>
+        <div className="form-grid">
+          <label>Code postal<input className="input" name="zip" required minLength={3} maxLength={16} autoComplete="postal-code"/></label>
+          <label>Ville<input className="input" name="city" required minLength={2} maxLength={100} autoComplete="address-level2"/></label>
+        </div>
+        <label>Pays<select className="input" name="country" value={country} onChange={event => setCountry(event.target.value as Country)} autoComplete="country"><option value="CH">Suisse</option><option value="FR">France</option><option value="BE">Belgique</option></select></label>
+        <details className="product-disclosure" onToggle={event => { if (!event.currentTarget.open) { const input = event.currentTarget.querySelector('input'); if (input) input.value = '' } }}><summary>Ajouter un code promotionnel</summary><label className="sr-only" htmlFor="promo">Code promotionnel</label><input id="promo" className="input" name="promo" maxLength={32}/></details>
+        <div className="shop-checkout-summary"><span>Sous-total</span><strong>{money(subtotal)}</strong></div>
+        <p>Le total, livraison et remises comprises, sera affiché sur Stripe avant le paiement.</p>
+        {country === 'CH' && <p>Livraison offerte en Suisse dès CHF 150 après remise.</p>}
+        {lines.some(line => !line.variant) && <p role="alert" className="error">Retirez les formats indisponibles pour continuer.</p>}
+        {error && <p role="alert" className="error">{error}</p>}
+        <button className="shop-button" disabled={busy || lines.some(line => !line.variant)}><LockKeyhole size={17}/>{busy ? 'Ouverture de Stripe…' : 'Continuer vers le paiement'}</button>
+      </form>
+    </div>}
+  </main>
+}

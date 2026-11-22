@@ -1,8 +1,39 @@
+import '@fontsource/instrument-serif/latin-400.css'
+import '@fontsource/instrument-serif/latin-400-italic.css'
+import '@fontsource-variable/inter'
 import './globals.css'
+import './boutique.css'
 import Link from 'next/link'
-import { ShoppingBag } from 'lucide-react'
 import type { Metadata } from 'next'
 import { service } from '@/lib/supabase'
-export const metadata:Metadata={title:'Olfactive Collection — Décants de parfums',description:'Explorez les parfums d’exception, en formats découverte.'}
-export const dynamic='force-dynamic'
-export default async function Layout({children}:{children:React.ReactNode}){const {data:settings}=process.env.SUPABASE_SECRET_KEY?await service().from('site_settings').select('brand_name,announcement,contact_email').eq('id',1).single():{data:null};return <html lang="fr"><body><header className="container site-nav"><Link href="/" className="brand">{settings?.brand_name || 'OLFACTIVE COLLECTION'}</Link><nav className="nav-links"><Link href="/catalogue">La collection</Link><Link href="/panier" aria-label="Panier"><ShoppingBag size={20}/></Link></nav></header>{settings?.announcement&&<div style={{textAlign:'center',padding:'12px 16px',background:'var(--ink)',color:'var(--cream)',fontSize:12,letterSpacing:'.11em'}}>{settings.announcement}</div>}{children}<footer className="footer"><div className="container footer-grid"><div><div className="brand">OLFACTIVE COLLECTION</div><p style={{color:'#b9b2a8',marginTop:16}}>Le parfum, dans sa plus belle expression.</p></div><div><p>Découvrir</p><p><Link href="/catalogue">La collection</Link></p><p><Link href="/panier">Mon panier</Link></p></div><div><p>Contact</p><p>{settings?.contact_email?<a href={`mailto:${settings.contact_email}`}>{settings.contact_email}</a>:'Contact à venir'}</p></div></div><div className="container" style={{borderTop:'1px solid #4b4842',marginTop:58,paddingTop:24,color:'#b9b2a8',fontSize:12}}>© {new Date().getFullYear()} Olfactive Collection</div></footer></body></html>}
+import { StoreNav } from '@/components/store-nav'
+
+export const metadata: Metadata = {
+  title: { default: 'Olfactive Collection | Décants de parfums de niche', template: '%s | Olfactive Collection' },
+  description: 'Explorez la parfumerie de niche sur votre peau. Une collection de décants en 5 ml, 10 ml et 10 ml rechargeable, selon le parfum.',
+}
+export const dynamic = 'force-dynamic'
+
+export default async function Layout({ children }: { children: React.ReactNode }) {
+  const { data: settings } = process.env.SUPABASE_SECRET_KEY && process.env.NEXT_PUBLIC_SUPABASE_URL
+    ? await service().from('site_settings').select('brand_name,announcement,contact_email').eq('id', 1).single()
+    : { data: null }
+  const brand = settings?.brand_name || 'Olfactive Collection'
+  const announcement = settings?.announcement?.trim()
+  return <html lang="fr"><body>
+    <a className="skip-link" href="#contenu">Aller au contenu</a>
+    <div className="shop-announcement">{announcement && announcement !== 'L’art du parfum, à votre mesure.' ? announcement : 'Décants de parfums de niche · 5 ml, 10 ml et 10 ml rechargeable'}</div>
+    <StoreNav brand={brand}/>
+    <div id="contenu" tabIndex={-1}>{children}</div>
+    <footer className="shop-footer">
+      <div className="shop-shell">
+        <div className="shop-footer-grid">
+          <div><Link href="/" className="footer-signature">{brand}</Link><p>Des parfums à essayer sur peau,<br/>des favoris à garder près de soi.</p></div>
+          <div><h2>Explorer</h2><Link href="/catalogue">Tous les parfums</Link><Link href="/catalogue?maison=Amouage">La sélection Amouage</Link></div>
+          <div><h2>Votre commande</h2><Link href="/#formats">Choisir son format</Link><Link href="/#questions">Questions fréquentes</Link><Link href="/panier">Voir le panier</Link>{settings?.contact_email && <a href={`mailto:${settings.contact_email}`}>Nous écrire</a>}</div>
+        </div>
+        <div className="shop-footer-bottom"><span>© {new Date().getFullYear()} {brand}</span><span>Parfumerie de niche · Prix en CHF</span></div>
+      </div>
+    </footer>
+  </body></html>
+}
