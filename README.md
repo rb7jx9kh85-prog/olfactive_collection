@@ -1,6 +1,6 @@
 # Olfactive Collection
 
-Boutique de décants Next.js 16, TypeScript, Tailwind CSS 4, Supabase PostgreSQL, Stripe Checkout **en mode test** et Resend. Interface publique et administration privée. Aucune référence, vente ou fiche client fictive n'est créée.
+Boutique de décants Next.js 16, TypeScript, Tailwind CSS 4, Supabase PostgreSQL, Stripe Checkout et Resend. Interface publique et administration privée. Aucune référence, vente ou fiche client fictive n'est créée.
 
 ## Démarrage
 
@@ -12,14 +12,15 @@ npm run dev
 
 La base Supabase liée est `hhmfzfmohtxasygrzvok` (région `eu-central-2`). Les cinq migrations dans `supabase/migrations/` sont déjà appliquées au projet lié. Pour un autre projet, appliquez-les dans l'ordre. La clé `sb_publishable_…` et l'URL sont publiques et préremplies dans `.env.example`. **Ne commitez jamais les secrets.**
 
-Le catalogue provenant de la liste tarifaire fournie contient 36 références et 108 variantes : 5 ml, 10 ml et 10 ml rechargeable. Les volumes de stock restent à zéro jusqu'à la réception de vrais flacons. Après avoir configuré `STRIPE_SECRET_KEY` en test, connectez-vous à `/admin/produits` et cliquez sur « Synchroniser avec Stripe » : un produit et un prix Stripe sont créés pour chaque référence et chaque variante, puis leurs identifiants sont enregistrés dans Supabase.
+Le catalogue provenant de la liste tarifaire fournie contient 36 références et 108 variantes : 5 ml, 10 ml et 10 ml rechargeable. Les volumes de stock restent à zéro jusqu'à la réception de vrais flacons. Après avoir configuré `STRIPE_SECRET_KEY`, connectez-vous à `/admin/produits` et cliquez sur « Synchroniser avec Stripe » : un produit et un prix Stripe sont créés dans le mode indiqué par `STRIPE_MODE` pour chaque référence et chaque variante, puis leurs identifiants sont enregistrés dans Supabase.
 
 Renseignez dans `.env.local` en local, puis dans les variables d'environnement Vercel :
 
 | Nom | Utilité |
 | --- | --- |
 | `SUPABASE_SECRET_KEY` | Clé secrète Supabase, uniquement côté serveur (Settings → API Keys). |
-| `STRIPE_SECRET_KEY` | Clé Stripe **`sk_test_…`** ; une clé de production est rejetée. |
+| `STRIPE_MODE` | `live` pour les paiements réels ou `test` pour les essais. Doit correspondre au préfixe de la clé. |
+| `STRIPE_SECRET_KEY` | Clé Stripe correspondant au mode : `sk_live_…` ou `sk_test_…`. |
 | `STRIPE_WEBHOOK_SECRET` | Secret `whsec_…` du webhook de l'environnement test. |
 | `RESEND_API_KEY` | Clé d'envoi Resend. |
 | `RESEND_FROM_EMAIL` | Expéditeur sur un domaine vérifié chez Resend. |
@@ -51,4 +52,4 @@ Les tests couvrent les entrées du panier, la livraison et le refus d'une sessio
 
 ## Déploiement Vercel
 
-Importez ce dépôt dans Vercel, configurez toutes les variables ci-dessus pour la production Vercel (Stripe reste en mode test), déployez, définissez `NEXT_PUBLIC_SITE_URL` sur l'URL finale et redéployez. Paramétrez le webhook Stripe test sur cette URL. Vérifiez le domaine d'envoi Resend. Ajoutez les premières références et les lots depuis l'admin. Aucun passage en paiement réel n'est activé par le code.
+Importez ce dépôt dans Vercel, configurez toutes les variables ci-dessus, déployez, définissez `NEXT_PUBLIC_SITE_URL` sur l'URL finale et redéployez. En live, créez un webhook Stripe live sur cette URL et renseignez son secret `whsec_…`. Vérifiez le domaine d'envoi Resend. Ajoutez les premières références et les lots depuis l'admin, puis synchronisez le catalogue dans le même mode Stripe que la clé configurée.
