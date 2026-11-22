@@ -12,6 +12,8 @@ npm run dev
 
 La base Supabase liée est `hhmfzfmohtxasygrzvok` (région `eu-central-2`). Les cinq migrations dans `supabase/migrations/` sont déjà appliquées au projet lié. Pour un autre projet, appliquez-les dans l'ordre. La clé `sb_publishable_…` et l'URL sont publiques et préremplies dans `.env.example`. **Ne commitez jamais les secrets.**
 
+Le catalogue provenant de la liste tarifaire fournie contient 36 références et 108 variantes : 5 ml, 10 ml et 10 ml rechargeable. Les volumes de stock restent à zéro jusqu'à la réception de vrais flacons. Après avoir configuré `STRIPE_SECRET_KEY` en test, connectez-vous à `/admin/produits` et cliquez sur « Synchroniser avec Stripe » : un produit et un prix Stripe sont créés pour chaque référence et chaque variante, puis leurs identifiants sont enregistrés dans Supabase.
+
 Renseignez dans `.env.local` en local, puis dans les variables d'environnement Vercel :
 
 | Nom | Utilité |
